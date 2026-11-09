@@ -1,0 +1,9 @@
+{
+  "name": "miro-engineering",
+  "version": "0.1.0",
+  "description": "Engineering process skills: running a multi-repo initiative with an architect session and several developer Claude Code sessions",
+  "author": {
+    "name": "Miroslav Cillik"
+  },
+  "keywords": ["engineering", "multi-session", "architect", "playbook", "linear"]
+}
