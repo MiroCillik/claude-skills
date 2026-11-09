@@ -5,5 +5,12 @@
   "author": {
     "name": "Miroslav Cillik"
   },
-  "keywords": ["engineering", "multi-session", "architect", "playbook", "linear"]
+  "keywords": [
+    "engineering",
+    "multi-session",
+    "architect",
+    "playbook",
+    "linear"
+  ],
+  "license": "MIT"
 }
