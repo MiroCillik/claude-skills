@@ -1,0 +1,17 @@
+{
+  "name": "miro-code-review",
+  "version": "0.1.0",
+  "description": "PR review skills behind the Revi bot: review style and comment shape, plus a scheduled, unattended GitHub PR review agent",
+  "author": {
+    "name": "Miroslav Cillik"
+  },
+  "keywords": [
+    "code-review",
+    "github",
+    "pull-request",
+    "linear",
+    "hermes",
+    "cron"
+  ],
+  "license": "MIT"
+}

@@ -11,6 +11,13 @@
       "version": "0.1.0",
       "source": "./plugins/miro-engineering",
       "category": "engineering"
+    },
+    {
+      "name": "miro-code-review",
+      "description": "PR review skills behind the Revi bot: review style and comment shape, plus a scheduled, unattended GitHub PR review agent",
+      "version": "0.1.0",
+      "source": "./plugins/miro-code-review",
+      "category": "engineering"
     }
   ]
 }
