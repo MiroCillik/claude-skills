@@ -14,7 +14,7 @@ Code and review text should be short and plain, and should explain themselves. R
 - Re-reviewing a PR you already reviewed: also read `references/re-reviewing.md`.
 - Addressing review comments on your PR: read `addressing.md` before you change code or reply.
 - Writing PR code: this file is enough.
-- PR changes a dependency or lock file (`composer.json`/`composer.lock`): also read `references/dependency-lockfiles.md`.
+- PR changes a dependency manifest or lock file (Composer, Go modules, uv/`requirements.txt`, pnpm): also read `references/dependency-lockfiles.md` (general rules) and the `references/dependency-lockfiles-<manager>.md` it points to.
 
 Read the code around a diff in the user's local checkout (`~/Projects/<repo>`; pull main first if it's on a clean main, otherwise fetch and read `origin/main`), not in a fresh temp clone. Use `gh pr diff` for the change itself.
 
