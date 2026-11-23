@@ -27,7 +27,8 @@ Short, plain review text for readers who often aren't native English speakers.
 | `reviewing.md` | Before reviewing a PR |
 | `references/re-reviewing.md` | Re-reviewing a PR you already reviewed |
 | `addressing.md` | Answering review comments on your own PR |
-| `references/dependency-lockfiles.md` | PR touches a dependency manifest or lock file (Composer, Go, Python, pnpm) |
+| `references/dependency-lockfiles.md` | PR touches a dependency manifest or lock file: general rules |
+| `references/dependency-lockfiles-<manager>.md` | Same, per package manager: `composer`, `go`, `python`, `pnpm` |
 | `scripts/collect-comments.sh` | Lists comments on your PR that still need an answer (`gh` + `jq`) |
 
 `addressing.md` refers to `superpowers:receiving-code-review` and `superpowers:test-driven-development` from the [superpowers](https://github.com/obra/superpowers) plugin.
