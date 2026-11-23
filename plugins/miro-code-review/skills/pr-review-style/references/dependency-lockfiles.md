@@ -54,43 +54,41 @@ When a lock refresh pulls a transitive package to a major the framework does not
   3. `go vet ./...` plus the repo's linter (usually `golangci-lint run`).
   4. `govulncheck ./...` (reports only vulnerabilities in code the module really calls).
 
-## Python: uv (`pyproject.toml` / `uv.lock`), legacy `requirements.txt`
+## Python: uv (`pyproject.toml` / `uv.lock`) or plain `requirements.txt`
 
-- Respect the folder's own toolchain. The standard is uv with `uv.lock` next to `pyproject.toml`. Many older components still use a plain `requirements.txt` with no lock. Moving a component to uv is its own PR, never part of a fix PR.
-- Pin a transitive package: add it to `dependencies` in `pyproject.toml` with `uv add "<pkg>>=x.y,<z"` (repo's constraint style), or use `[tool.uv] constraint-dependencies` if it must not become a direct dependency.
+- Respect the toolchain the project already uses. Moving a project to another tool (e.g. from `requirements.txt` to uv) is its own PR, never part of a fix PR.
+- Pin a transitive package: add it to `dependencies` in `pyproject.toml` with `uv add "<pkg>>=x.y,<z"` in the repo's constraint style, or use `[tool.uv] constraint-dependencies` if it must not become a direct dependency.
 - Update one package, lock only:
 
   ```bash
   uv lock --upgrade-package <pkg>
   ```
 
-  Use `uv add <pkg>==<ver>` only when the constraint in `pyproject.toml` must change. Do not run `uv lock --upgrade`, it upgrades everything. Legacy `requirements.txt`: change only that one line.
-- Tool version: `uv.lock` has a `version`/`revision` at the top. An older uv may refuse the lock or rewrite it; update uv (`uv self update`) instead.
+  Use `uv add <pkg>==<ver>` only when the constraint in `pyproject.toml` must change. Do not run `uv lock --upgrade`, it upgrades everything. Plain `requirements.txt`: change only that one line.
+- Tool version: an older uv may refuse the lock or rewrite it; update uv (`uv self update`) instead.
 - Diff check: `git diff uv.lock | grep -E '^[-+](name|version) = '` should show only the target package (and packages it pulls in).
 - Verify:
   1. `uv lock --check` (fails if the lock is stale), then `uv sync --frozen`.
-  2. `uv run --frozen ruff check` and `ruff format --check`; `ty check` only if the component already runs it.
-  3. `uv run --frozen pytest` (unittest on older components). Legacy components: `docker compose run --rm test`.
-  4. Security audit: CI has none; if you want one, `uvx pip-audit` on the change and on the base. In `keboola/components`, `tools/component verify <folder>` runs steps 1–3.
+  2. The project's linter and type checker through `uv run --frozen` (e.g. `ruff check`, `ruff format --check`).
+  3. The test suite (`uv run --frozen pytest` or what the project uses).
+  4. `uvx pip-audit`.
 
-## JavaScript (UI): pnpm (`package.json` / `pnpm-lock.yaml`)
+## JavaScript: pnpm (`package.json` / `pnpm-lock.yaml`)
 
-Based on `keboola/ui` (pnpm workspace with `apps/*` and `packages/*`). Its `AGENTS.md` is the source of truth; read it if anything here disagrees.
-
-- Constraint style: follow the repo. Change the `package.json` of the workspace that uses the dependency, not the root. Syncpack keeps the same dependency on the same range across workspaces, so match the range other workspaces already use.
-- Pin a transitive package: add it to `overrides` in `pnpm-workspace.yaml`, scoped to the affected major or range only (e.g. `'uuid@9': '^11.1.1'`), with a comment that names the advisory and why. Keep the target within the same major unless the comment explains the cross-major jump.
-- Update one package:
+- Constraint style: follow the repo. In a workspace, change the `package.json` of the workspace that uses the dependency, not the root, and match the range other workspaces already use for the same package.
+- Pin a transitive package: add it to `overrides` (in `pnpm-workspace.yaml` or `pnpm.overrides` in the root `package.json`, wherever the repo keeps them), scoped to the affected version range (e.g. `'<pkg>@<2.1.3': '^2.1.3'`), with a comment that says why. Stay within the same major unless the comment explains the jump.
+- Update one package, lock only:
 
   ```bash
-  pnpm update <pkg> --filter <workspace> --lockfile-only
+  pnpm update <pkg> --lockfile-only
   ```
 
-  Do not run `pnpm update` without a package name, it updates everything. When removing a dependency, do not commit what a plain `pnpm install` produces: it churns unrelated lock entries. Trim `pnpm-lock.yaml` to the package's own blocks (`importers`, `packages:`, `snapshots:`).
-- Supply-chain gates in `pnpm-workspace.yaml`: `minimumReleaseAge` (versions newer than a day do not resolve) and `trustPolicy: no-downgrade` (a version published with weaker provenance than an earlier one is refused). If resolving fails because of them, do not add an exclude to get around it; wait, or pick an older version. An exclude needs its own justification in review.
+  Add `--filter <workspace>` in a workspace. Do not run `pnpm update` without a package name, it updates everything. When removing a dependency, a plain `pnpm install` can churn unrelated lock entries; keep only the removed package's blocks in the diff.
+- Supply-chain gates (`minimumReleaseAge`, `trustPolicy`): if resolving fails because of them, do not add an exclude to get around it. Wait or pick an older version; an exclude needs its own justification.
 - Tool version: use the pnpm from `packageManager` in the root `package.json` (Corepack picks it up). A different pnpm major changes `lockfileVersion` and rewrites the whole lock.
 - Diff check: `git diff pnpm-lock.yaml | grep -E '^[-+] +/?<pkg>@'` should show only the target package and its own sub-dependencies.
 - Verify:
-  1. `pnpm install --frozen-lockfile` (fails if the lock is stale; for a removal it must report the expected `Packages: -N` and leave the file unchanged).
-  2. `pnpm deps:check` (Syncpack, singleton deps, `pnpm dedupe --check`; `pnpm deps:fix` fixes) and `pnpm knip:check`.
-  3. `pnpm lint`, `pnpm type-check`, `pnpm test`, `pnpm build` (turbo runs only what the change affects).
-  4. `pnpm audit --prod` on the change and on the base.
+  1. `pnpm install --frozen-lockfile` (fails if the lock is stale).
+  2. The repo's dependency checks if it has them (e.g. `pnpm dedupe --check`, syncpack, knip).
+  3. The repo's lint, type-check, test and build scripts.
+  4. `pnpm audit --prod`.
